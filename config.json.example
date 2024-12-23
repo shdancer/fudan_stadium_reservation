@@ -1,0 +1,20 @@
+{
+    "user": {
+        "username": "yor id",
+        "password": "your password"
+    },
+    "order": {
+        "date": "YYYY-MM-DD",
+        "time": "hh:mm",
+        "contentId": "find on website",
+        "categoryId": "find on website"
+    },
+    "chaojiying": {
+        "username": "your chaojiying username",
+        "pass2": "your chaojiying md5 password",
+        "softid": "your chaojiying softid"
+    },
+    "auto": {
+        "time": "hh:mm"
+    }
+}
