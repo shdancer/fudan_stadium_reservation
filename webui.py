@@ -52,14 +52,22 @@ except FileNotFoundError:
     }
 
 
+if "save_success" not in st.session_state:
+    st.session_state.save_success = False
+
+
 with st.form("config_form"):
+    st.write("### 用户信息")
     username = st.text_input("学号", value=config["user"]["username"])
     password = st.text_input("密码", type="password", value=config["user"]["password"])
-    date = st.text_input("日期", value=config["order"]["date"])
-    time_ = st.text_input("时间", value=config["order"]["time"])
+
+    st.write("### 预约信息")
+    date = st.date_input("日期", value=config["order"]["date"])
+    time_ = st.time_input("时间", value=config["order"]["time"])
     contentId = st.text_input("内容id", value=config["order"]["contentId"])
     categoryId = st.text_input("类别id", value=config["order"]["categoryId"])
 
+    st.write("### 超级鹰信息")
     chaojiying_username = st.text_input(
         "超级鹰用户名", value=config["chaojiying"]["username"]
     )
@@ -77,8 +85,8 @@ with st.form("config_form"):
     if submitted:
         config["user"]["username"] = username
         config["user"]["password"] = password
-        config["order"]["date"] = date
-        config["order"]["time"] = time_
+        config["order"]["date"] = date.strftime("%Y-%m-%d")
+        config["order"]["time"] = time_.strftime("%H:%M")
         config["order"]["contentId"] = contentId
         config["order"]["categoryId"] = categoryId
         config["chaojiying"]["username"] = chaojiying_username
@@ -86,8 +94,12 @@ with st.form("config_form"):
         config["chaojiying"]["softid"] = chaojiying_softid
         with open("config.json", "w") as f:
             json.dump(config, f, indent=4)
+        st.session_state.save_success = True
         st.rerun()
+
+    if st.session_state.save_success:
         st.success("保存成功")
+        st.session_state.save_success = False
 
 
 st.write("## Step 2: 开始预约")
