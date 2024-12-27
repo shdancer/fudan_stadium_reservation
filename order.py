@@ -33,25 +33,28 @@ def login(session, config):
 
 
 def get_resource_id(session, config):
-    respose = session.get(
-        f"https://elife.fudan.edu.cn/public/front/getResource2.htm?contentId={config['order']['contentId']}&ordersId=&currentDate={config['order']['date']}"
-    )
+    while True:
+        respose = session.get(
+            f"https://elife.fudan.edu.cn/public/front/getResource2.htm?contentId={config['order']['contentId']}&ordersId=&currentDate={config['order']['date']}"
+        )
 
-    bs4_object = bs4.BeautifulSoup(respose.text, "html.parser")
-    resources = bs4_object.findAll("tr", class_="site_tr")
+        bs4_object = bs4.BeautifulSoup(respose.text, "html.parser")
+        resources = bs4_object.findAll("tr", class_="site_tr")
 
-    for resource in resources:
-        if resource.find("td", {"class": "site_td4"}) is None:
-            continue
-        if (
-            resource.find("td", {"class": "site_td1"}).find("font").string
-            == config["order"]["time"]
-        ):
-            return (
-                resource.find("td", {"class": "site_td5"})
-                .find("select")["id"]
-                .replace("orderCount", "")
-            )
+        for resource in resources:
+            if resource.find("td", {"class": "site_td4"}) is None:
+                continue
+            if (
+                resource.find("td", {"class": "site_td1"}).find("font").string
+                == config["order"]["time"]
+            ):
+                select = resource.find("td", {"class": "site_td5"}).find("select")
+                if select is None:
+                    print("当前无可预约场地")
+                    continue
+                return select["id"].replace("orderCount", "")
+
+        time.sleep(1)
 
 
 def captcha(text, base64, config):
