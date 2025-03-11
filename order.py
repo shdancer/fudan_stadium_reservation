@@ -33,11 +33,14 @@ def login(session, config):
 
 
 def get_resource_id(session, config):
-    while True:
+    # return "8aecc6ce93282bf401936703a91d0d8b"
+    for _ in range(5):
         respose = session.get(
-            f"https://elife.fudan.edu.cn/public/front/getResource2.htm?contentId={config['order']['contentId']}&ordersId=&currentDate={config['order']['date']}"
+            f"https://elife.fudan.edu.cn/public/front/getResource2.htm?contentId={config['order']['contentId']}&ordersId=&currentDate={config['order']['date']}",
+            headers={
+                "Referer": f"https://elife.fudan.edu.cn/public/front/toResourceFrame.htm?contentId={config['order']['contentId']}",
+            },
         )
-
         bs4_object = bs4.BeautifulSoup(respose.text, "html.parser")
         resources = bs4_object.findAll("tr", class_="site_tr")
 
@@ -54,7 +57,7 @@ def get_resource_id(session, config):
                     continue
                 return select["id"].replace("orderCount", "")
 
-        time.sleep(1)
+        time.sleep(2)
 
 
 def captcha(text, base64, config):
@@ -100,9 +103,13 @@ el1ejKJocJgYJE7WxQIDAQAB
 
 def order(session, resource_id, config):
     order_page_url = f"https://elife.fudan.edu.cn/public/front/loadOrderForm_ordinary.htm?serviceContent.id={config['order']['contentId']}&serviceCategory.id={config['order']['categoryId']}&codeStr=&currentDate={config['order']['date']}&resourceIds={resource_id}&orderCounts=1"
+    # print(order_page_url)
+    # raise Exception
     response = session.get(
         order_page_url,
     )
+
+    # print(response.text)
 
     bs4_object = bs4.BeautifulSoup(response.text, "html.parser")
     rsa_text_ = bs4_object.find("input", {"id": "rsa_text_"})["value"]
@@ -173,8 +180,27 @@ def order_stadium(config):
     )
 
     login(session, config)
-    resource_id = get_resource_id(session, config)
-    order(session, resource_id, config)
+
+    session.headers.update(
+        {
+            "Sec-Ch-Ua": '"Microsoft Edge";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
+            "Sec-Ch-Ua-Mobile": "?0",
+            "Sec-Ch-Ua-Platform": '"Windows"',
+            "Sec-Fetch-Dest": "iframe",
+            "Sec-Fetch-Mode": "navigate",
+            "Sec-Fetch-Site": "same-origin",
+            "Sec-Fetch-User": "?1",
+            "Upgrade-Insecure-Requests": "1",
+            "Host": "elife.fudan.edu.cn",
+        }
+    )
+    for choosedTime in config["order"]["time"]:
+        # duplicate the config
+        newConfig = config.copy()
+        newConfig["order"]["time"] = choosedTime
+        resource_id = get_resource_id(session, config)
+        time.sleep(1)
+        order(session, resource_id, config)
 
 
 if __name__ == "__main__":
